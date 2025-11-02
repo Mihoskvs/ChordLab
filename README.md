@@ -52,18 +52,5 @@ It includes:
 
 ## 🖥️ Installation
 
-### macOS (Ventura recommended)
-```bash
-# System prep
-xcode-select --install
-brew install git python node
-
-# Python setup
-python3 -m venv ~/venvs/minilab
-source ~/venvs/minilab/bin/activate
-pip install --upgrade pip
-pip install mido python-rtmidi
-
-# Node setup
-brew install node
+### TBA
 
