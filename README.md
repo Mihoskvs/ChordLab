@@ -1,56 +1,97 @@
-# ChordLab
-[CURRENTLY ONLY FOR MINILAB 3] Convert your MIDI Controller into a Chord builder inspired by Orchid by Telepathic Instruments.
+# ChordLab — MiniLab 3 Chord Builder
 
-# 🎛 MiniLab-3 Chord Builder / Performance System
+Transform the Arturia **MiniLab 3** into a performance-ready chord workstation. ChordLab ships with a Python MIDI engine, WebMIDI control surface, and utilities for lighting the pads / OLED display with live feedback.
 
-A hybrid **hardware–software MIDI environment** built around the **Arturia MiniLab 3**, turning it into a powerful *chord engine, arpeggiator, and live performance controller*.
+![MiniLab 3 pads illustration](assets/minilab-pads.svg)
 
----
-
-## 🧩 Overview
-
-This project re-uses the MiniLab 3’s pads, faders, encoders, and OLED display to generate, manipulate, and visualize complex chords and performance modes.  
-It includes:
-
-- A **Python backend** (MIDI engine, chord generator, SysEx feedback)
-- A **React frontend** (WebMIDI app for live LED & OLED control)
-- Full **Arturia MCC** mapping setup and open MIDI routing via the **IAC Driver** on macOS
+> 💡 This repository mirrors the structure described in the project brief. Each tool can be run independently or combined for a full live performance setup.
 
 ---
 
-## 🧠 Concept
+## Project Layout
 
-- **Pads (21–28)** select *chord types* — e.g. major, minor, sus2, diminished.  
-- **Keys** on the keyboard set the *root note* — the actual pitch of the chord.  
-- **Faders** define *chord complexity and shape*:  
-  - F1 → Complexity (triad → 7th → 9th → 11th)  
-  - F2 → Spread (voice distance, 0–24 semitones)  
-  - F3 → Octave doubling (0, ±12, ±24)  
-  - F4 → Tension (adds #11, b9, #5, etc.)
-- **Main encoder** switches *modes* (Chord / Strum / Arp / Scale / Voicing / Rhythm / FX / Morph / Performance / Sampler*).  
-  - Turn = select mode  
-  - Press = enter subtype  
-- **OLED** and **pad LEDs** provide live feedback via SysEx messages.  
-- **IAC “ChordOut”** virtual port sends playable MIDI output to your DAW or synth.
+| Path | Description |
+| --- | --- |
+| `chord_builder.py` | Python chord engine that interprets pad/keyboard input and emits harmonised chords |
+| `minilab3_display_colors.py` | Helpers for building SysEx payloads that light the pads and update the OLED |
+| `midi_logger.py` | Simple CLI utility for mirroring and debugging MIDI traffic |
+| `tests/` | Pytest suite covering the core chord engine behaviour |
+| `minilab-ui/` | Vite + React WebMIDI dashboard for pushing pad colours and OLED text |
+| `assets/` | Visual assets referenced in documentation |
+| `Project Brief` | Original brief from the hardware team |
 
 ---
 
-## 🔧 Hardware Mapping Summary
+## Getting Started (Python Engine)
 
-| Control | Type | MIDI | Function |
-|----------|------|------|-----------|
-| Pads 21–28 | note 36–43 (ch 9) | Chord types | maj / min / maj7 / min7 / sus2 / sus4 / dim / aug |
-| Faders 1–4 | CC 14 / 15 / 30 / 31 | Chord modifiers | complexity / spread / oct / tension |
-| Encoders 1–8 | CC 86 / 87 / 89 / 90 / 110 / 111 / 116 / 117 | Context parameters |
-| Main encoder | CC 28 (rotate), CC 118 (click) | Mode / Subtype selector |
-| Mod strip | CC 1 | Strum speed / Mod depth |
-| Pitch strip | Pitchwheel | Pitchbend / Morph axis |
-| Shift | CC 27 | Config modifier |
-| Hold, Oct ± | internal / TBA | optional DAW sync / range shift |
+### 1. Install dependencies
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .[dev]
+```
+
+> ℹ️ The repository ships with a very small `mido_stub` module so the test suite can run without system MIDI dependencies. For real hardware interaction, install the official [`mido`](https://mido.readthedocs.io/) package, which will automatically be used when available.
+
+### 2. Run the chord engine in a DAW setup
+
+The engine expects the MiniLab 3 to send data on its default channels and will forward generated chords to the configured output port (defaults to channel 1). It can be embedded into your own script or used interactively:
+
+```python
+from mido import open_input, open_output
+from chord_builder import MiniLabChordEngine
+
+with open_input('MiniLab3 In') as in_port, open_output('IAC Driver ChordOut') as out_port:
+    engine = MiniLabChordEngine(out_port)
+    for message in in_port:
+        engine.process_message(message)
+```
+
+### 3. Running the tests
+
+```bash
+pytest
+```
 
 ---
 
-## 🖥️ Installation
+## Web UI (WebMIDI)
 
-### TBA
+The `minilab-ui` directory contains a Vite project that can send SysEx commands directly from the browser (Chrome / Edge).
 
+```bash
+cd minilab-ui
+npm install
+npm run dev
+```
+
+Open the printed URL in a WebMIDI-compatible browser, select the MiniLab output and use the controls to update pad colours / OLED lines.
+
+---
+
+## Utilities
+
+### MIDI Logger
+
+List available input ports and monitor data flowing through them while optionally forwarding to another destination:
+
+```bash
+python midi_logger.py "MiniLab3 In" "IAC Driver ChordOut"
+```
+
+### SysEx Helpers
+
+Generate raw SysEx payloads for use with other tools or hardware testing rigs:
+
+```python
+from minilab3_display_colors import RGB, build_pad_color_sysex
+
+sysex = build_pad_color_sysex('PAD_21', RGB(120, 40, 10))
+```
+
+---
+
+## License
+
+MIT — see `LICENSE` for details.
