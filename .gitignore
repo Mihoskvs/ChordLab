@@ -1,21 +1,19 @@
-<<<<<<< ours
 # Python
-=======
->>>>>>> theirs
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
 .venv/
 .env
-<<<<<<< ours
 
-# Node
+# Node / Web
 node_modules/
+minilab-ui/node_modules/
+minilab-ui/dist/
 dist/
+.minilab-state/
+
+# Build artifacts
+*.egg-info/
 
 # macOS
-=======
-node_modules/
-.minilab-state/
-dist/
->>>>>>> theirs
 .DS_Store

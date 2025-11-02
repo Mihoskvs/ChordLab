@@ -89,7 +89,7 @@ Press `Ctrl+C` in that terminal to stop both processes.
 
 ## Web UI (WebMIDI)
 
-The `minilab-ui` directory contains a Vite project that can send SysEx commands directly from the browser (Chrome / Edge).
+The `minilab-ui` directory contains the React/WebMIDI console. It only permits local origins (http://localhost or https://localhost).
 
 ```bash
 cd minilab-ui
@@ -97,7 +97,37 @@ npm install
 npm run dev
 ```
 
-Open the printed URL in a WebMIDI-compatible browser, select the MiniLab output, and use the controls to update pad colours / OLED lines.
+The first visit shows a permission banner. Click **Request MIDI + SysEx** to grant access; once granted the status chip flips to *ready* and available inputs/outputs are listed.
+
+### Permissions & secure context
+- Browsers block WebMIDI on `file://` – always serve from localhost.
+- Chrome or Edge on desktop are recommended. Safari still gates SysEx behind experimental flags.
+- The UI exposes a manual permission button (`requestMIDIAccess({ sysex: true })`) so you can re-authorise at any point.
+
+### Chord modifiers & sliders
+- Four sliders map 1:1 to the Python engine modifiers (CC82, CC83, CC85, CC17).
+- Values are stored as 0–1 floats. Complexity/tension snap to four discrete stages, octave doubling snaps to {-24, -12, 0, +12, +24}. Spread spans 0–24 semitone widening.
+- Moving the hardware faders updates the UI within ≈16 ms and dragging the UI slider emits the matching CC back to the MiniLab within ≈50 ms.
+
+### Pad mapping & colour mirror
+- Pads 21–28 mirror chord types (`maj → aug`). Default mapping listens for notes 36–43 on MIDI channel 9 (zero-based 8).
+- Hardware presses light the matching tile in the UI and push the stored RGB back to the pad via SysEx + NoteOn/Off. Clicking a tile triggers the same message flow.
+
+### Learn mode & mapping persistence
+- Every pad/slider/encoder row has a **Learn** button. The next incoming event rebinds that control and is persisted to `localStorage['chordlab.midiMapping.v1']`.
+- Defaults ship for the eight pads and four sliders so the UI works out of the box even without learning.
+- Encoder bindings include optional parameter targets and mode overrides; overrides survive reloads.
+
+### Encoders
+- Encoder movement is normalised through the `EncoderTracker`. The first six samples infer absolute vs. relative mode (two’s complement, sign magnitude, 1/127).
+- Signed deltas drive whichever parameter the encoder is assigned to. You can override the mode per encoder if the guess is wrong.
+
+### OLED editor
+- Both lines accept 16 ASCII characters. The **Send OLED Text** button pushes a SysEx packet using the MiniLab header (`F0 00 20 6B 7F 42 … F7`).
+
+### Engine loop vs. standalone UI
+- To keep pads/LEDs in sync with the Python engine, run `python run_engine.py --auto` (or the stack script) so pad presses flow through the engine and back to the MiniLab output.
+- Running only the UI is also supported; it will talk directly to the controller when an output is selected.
 
 ---
 

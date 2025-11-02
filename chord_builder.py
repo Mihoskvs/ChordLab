@@ -164,6 +164,12 @@ def boost_colour(colour: RGB, amount: int = 20) -> RGB:
 
 
 @dataclass
+# UI/engine contract for modifier semantics
+# complexity: 0 -> triad, 1st band adds 7th, 2nd adds 9th, 3rd adds 11th
+# spread: 0-127 maps to 0-24 semitones of widening between stacked notes
+# octave: discrete regions double voices at 0 (+/-0), 32 (-12), 64 (+12), 96 (-24/+24)
+# tension: discrete stages add [none, b9, #11, #5] depending on chord quality
+
 class FaderState:
     """Represents the value of the four chord-shaping faders."""
 

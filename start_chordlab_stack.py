@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 WEB_UI_DIR = REPO_ROOT / "minilab-ui"
 
 ENGINE_CMD = [sys.executable, str(REPO_ROOT / "run_engine.py"), "--auto"]
-WEB_CMD = ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+WEB_CMD = ["npm", "run", "dev"]
 
 PAD_NOTES_DEFAULT = "36,37,38,39,40,41,42,43"
 
