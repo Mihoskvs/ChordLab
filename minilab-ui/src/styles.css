@@ -1,0 +1,231 @@
+:root {
+  font-family: "Inter", system-ui, sans-serif;
+  background: radial-gradient(circle at top, #0f172a 0%, #020617 60%, #000 100%);
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+main.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(240px, 1fr);
+  gap: 2rem;
+  padding: 3rem clamp(1rem, 5vw, 6rem);
+}
+
+.left h1 {
+  margin-top: 0;
+  font-size: clamp(2rem, 3vw, 2.5rem);
+}
+
+.description {
+  max-width: 58ch;
+  line-height: 1.6;
+  color: #cbd5f5;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.45);
+}
+
+.panel select,
+.panel input {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  color: inherit;
+}
+
+.panel input:focus,
+.panel select:focus {
+  outline: 2px solid rgba(94, 234, 212, 0.8);
+}
+
+.label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+}
+
+.primary {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #0f172a;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.primary:hover:not(.disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+}
+
+.primary.disabled,
+.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.pad-control {
+  padding: 1rem;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pad-control header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.slider-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.slider {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+}
+
+.slider[data-orientation="horizontal"] {
+  width: 100%;
+}
+
+.slider [data-radix-slider-track] {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.slider [data-radix-slider-range] {
+  position: absolute;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #22d3ee);
+}
+
+.slider [data-radix-slider-thumb] {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+}
+
+.value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+aside.right {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4);
+}
+
+aside.right h2 {
+  margin-top: 0;
+}
+
+aside.right ol {
+  padding-left: 1.2rem;
+  color: #cbd5f5;
+  line-height: 1.6;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  font-weight: 500;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+}
+
+.dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+.error {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  main.layout {
+    grid-template-columns: 1fr;
+  }
+
+  aside.right {
+    order: -1;
+  }
+}

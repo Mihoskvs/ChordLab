@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node
+node_modules/
+minilab-ui/node_modules/
+dist/
+minilab-ui/dist/
+.vite/
+.DS_Store

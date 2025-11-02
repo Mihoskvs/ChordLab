@@ -1,56 +1,72 @@
 # ChordLab
-[CURRENTLY ONLY FOR MINILAB 3] Convert your MIDI Controller into a Chord builder inspired by Orchid by Telepathic Instruments.
 
-# 🎛 MiniLab-3 Chord Builder / Performance System
+Transform the Arturia **MiniLab 3** into a chord performance workstation with a Python MIDI engine and a WebMIDI control panel.
 
-A hybrid **hardware–software MIDI environment** built around the **Arturia MiniLab 3**, turning it into a powerful *chord engine, arpeggiator, and live performance controller*.
+## Project layout
 
----
+| Path | Description |
+| --- | --- |
+| `chord_builder.py` | Core MIDI engine that interprets pad/keyboard/fader messages and generates chords. |
+| `minilab3_display_colors.py` | SysEx helpers for OLED text and RGB pad colour packets. |
+| `midi_logger.py` | Command-line tool to inspect or forward MiniLab MIDI traffic. |
+| `minilab-ui/` | Vite + React WebMIDI interface for OLED/pad configuration. |
+| `assets/` | Static references (pad map blueprints, artwork). |
+| `PROJECT_BRIEF.md` | Original design brief and hardware mapping. |
 
-## 🧩 Overview
+## Python engine
 
-This project re-uses the MiniLab 3’s pads, faders, encoders, and OLED display to generate, manipulate, and visualize complex chords and performance modes.  
-It includes:
+### Installation
 
-- A **Python backend** (MIDI engine, chord generator, SysEx feedback)
-- A **React frontend** (WebMIDI app for live LED & OLED control)
-- Full **Arturia MCC** mapping setup and open MIDI routing via the **IAC Driver** on macOS
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt  # see below if the file is missing
+```
 
----
+> **Note**
+> The repository does not pin dependencies yet. Install the following manually if `requirements.txt` is absent:
+>
+> ```bash
+> pip install mido python-rtmidi
+> ```
 
-## 🧠 Concept
+### Running the chord builder
 
-- **Pads (21–28)** select *chord types* — e.g. major, minor, sus2, diminished.  
-- **Keys** on the keyboard set the *root note* — the actual pitch of the chord.  
-- **Faders** define *chord complexity and shape*:  
-  - F1 → Complexity (triad → 7th → 9th → 11th)  
-  - F2 → Spread (voice distance, 0–24 semitones)  
-  - F3 → Octave doubling (0, ±12, ±24)  
-  - F4 → Tension (adds #11, b9, #5, etc.)
-- **Main encoder** switches *modes* (Chord / Strum / Arp / Scale / Voicing / Rhythm / FX / Morph / Performance / Sampler*).  
-  - Turn = select mode  
-  - Press = enter subtype  
-- **OLED** and **pad LEDs** provide live feedback via SysEx messages.  
-- **IAC “ChordOut”** virtual port sends playable MIDI output to your DAW or synth.
+```bash
+python chord_builder.py
+```
 
----
+The engine opens the selected MiniLab 3 input port, tracks pad chord types, applies the four fader modifiers (complexity, spread, octave doubling, tension), and emits chord stacks to the configured output (e.g. IAC "ChordOut").
 
-## 🔧 Hardware Mapping Summary
+To monitor MIDI routing while developing, use:
 
-| Control | Type | MIDI | Function |
-|----------|------|------|-----------|
-| Pads 21–28 | note 36–43 (ch 9) | Chord types | maj / min / maj7 / min7 / sus2 / sus4 / dim / aug |
-| Faders 1–4 | CC 14 / 15 / 30 / 31 | Chord modifiers | complexity / spread / oct / tension |
-| Encoders 1–8 | CC 86 / 87 / 89 / 90 / 110 / 111 / 116 / 117 | Context parameters |
-| Main encoder | CC 28 (rotate), CC 118 (click) | Mode / Subtype selector |
-| Mod strip | CC 1 | Strum speed / Mod depth |
-| Pitch strip | Pitchwheel | Pitchbend / Morph axis |
-| Shift | CC 27 | Config modifier |
-| Hold, Oct ± | internal / TBA | optional DAW sync / range shift |
+```bash
+python midi_logger.py
+```
 
----
+Add a port name to stream data or combine `--forward` to proxy to the DAW.
 
-## 🖥️ Installation
+## Web UI
 
-### TBA
+The React front-end lets you edit OLED lines and push RGB colours to pads via WebMIDI SysEx calls.
 
+```bash
+cd minilab-ui
+pnpm install  # or npm install / yarn install
+pnpm dev
+```
+
+Open `http://localhost:5173` in Chrome or Edge with experimental WebMIDI features enabled and choose the MiniLab 3 output port.
+
+## Development checklist
+
+- [x] Core chord interval map and modifier logic
+- [x] SysEx helpers for OLED & pads
+- [x] MIDI logging utility
+- [x] WebMIDI configuration UI
+- [ ] Hold / Octave button assignment
+- [ ] DAW clock sync toggle
+- [ ] Preset store/recall JSON files
+- [ ] Live WebSocket bridge between Python engine and Web UI
+
+For the full context and hardware layout see [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
