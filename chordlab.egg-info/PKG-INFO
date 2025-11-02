@@ -1,3 +1,16 @@
+Metadata-Version: 2.4
+Name: chordlab
+Version: 0.1.0
+Summary: MiniLab 3 chord builder toolkit
+Author: MiniLab Team
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: mido>=1.3
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Dynamic: license-file
+
 # ChordLab — MiniLab 3 Chord Builder
 
 Transform the Arturia MiniLab 3 into a performance-ready chord workstation. ChordLab ships with a Python MIDI engine, WebMIDI control surface, and utilities for lighting the pads / OLED display with live feedback.
@@ -66,24 +79,6 @@ python run_engine.py --auto
 # Or specify ports explicitly
 python run_engine.py --in "MiniLab" --out "IAC Driver Bus 1" --fb "MiniLab"
 ```
-
-### 5. One command to run everything
-
-If you want the Python engine *and* the WebMIDI UI launched together (with pad
-channels normalised automatically), use:
-
-```bash
-python start_chordlab_stack.py
-```
-
-This will:
-
-* ensure the Web UI dependencies are installed (runs `npm install` if needed)
-* start the engine with `--auto` and pad note remapping enabled
-* start the Vite dev server for the UI
-* open the UI in your default browser at `http://localhost:5173/`
-
-Press `Ctrl+C` in that terminal to stop both processes.
 
 ---
 

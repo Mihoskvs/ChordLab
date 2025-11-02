@@ -6,7 +6,9 @@
     "moduleResolution": "Node",
     "strict": true,
     "jsx": "react-jsx",
-    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["vite/client"]
   },
   "include": ["src"],

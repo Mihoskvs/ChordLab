@@ -1,50 +1,56 @@
-"""Simple MIDI monitor utility for debugging MiniLab 3 mappings."""
+"""Simple terminal logger for incoming/outgoing MIDI ports.""" 
 from __future__ import annotations
 
-import argparse
+import contextlib
 import sys
-from typing import Optional
+import time
+from typing import Iterable, Optional
 
-import mido
-
-
-def list_ports() -> None:
-    print("Available MIDI inputs:")
-    for name in mido.get_input_names():
-        print(f"  - {name}")
-    print("\nAvailable MIDI outputs:")
-    for name in mido.get_output_names():
-        print(f"  - {name}")
+try:
+    from mido import open_input, open_output
+except ModuleNotFoundError:  # pragma: no cover - fallback for tests
+    from mido_stub import open_input, open_output
 
 
-def monitor(port_name: str, raw: bool = False) -> None:
+class MidiLogger:
+    """Mirror MIDI messages between ports while printing them."""
+
+    def __init__(self, input_port: str, output_port: Optional[str] = None):
+        self.input_name = input_port
+        self.output_name = output_port
+
+    def run(self) -> None:
+        with contextlib.ExitStack() as stack:
+            in_port = stack.enter_context(open_input(self.input_name))
+            out_port = stack.enter_context(open_output(self.output_name)) if self.output_name else None
+            print(f"Listening on {self.input_name}. Forwarding to {self.output_name or '[none]'}")
+            for message in in_port:
+                timestamp = time.strftime("%H:%M:%S")
+                print(f"[{timestamp}] {message}")
+                if out_port is not None:
+                    out_port.send(message)
+
+
+def list_ports() -> Iterable[str]:
     try:
-        with mido.open_input(port_name) as port:
-            print(f"Listening on {port_name}. Press Ctrl+C to stop.")
-            for message in port:
-                if raw:
-                    print(message.hex())
-                else:
-                    print(message)
-    except KeyboardInterrupt:  # pragma: no cover - interactive utility
-        print("\nStopped.")
-    except IOError as exc:
-        raise SystemExit(f"Failed to open MIDI port: {exc}")
+        from mido import get_input_names
+    except ModuleNotFoundError:  # pragma: no cover - fallback for tests
+        from mido_stub import get_input_names
+
+    return get_input_names()
 
 
-def main(argv: Optional[list[str]] = None) -> None:
-    parser = argparse.ArgumentParser(description="MiniLab 3 MIDI monitor")
-    parser.add_argument("port", nargs="?", help="MIDI input port name")
-    parser.add_argument("--raw", action="store_true", help="Display hex data instead of parsed messages")
-    parser.add_argument("--list", action="store_true", help="List available MIDI ports and exit")
-    args = parser.parse_args(argv)
-
-    if args.list or not args.port:
-        list_ports()
-        if not args.port:
-            return
-    monitor(args.port, raw=args.raw)
+def main(argv: list[str] | None = None) -> int:
+    argv = list(argv or sys.argv[1:])
+    if not argv:
+        print("Usage: midi_logger.py <input-port> [output-port]", file=sys.stderr)
+        return 1
+    input_port = argv[0]
+    output_port = argv[1] if len(argv) > 1 else None
+    MidiLogger(input_port, output_port).run()
+    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main(sys.argv[1:])
+    raise SystemExit(main())
+

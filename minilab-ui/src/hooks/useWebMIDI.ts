@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const SYSEX_ID = [0x00, 0x20, 0x6b, 0x7f, 0x42, 0x02, 0x02, 0x16];
+type MidiOutput = MIDIOutput;
 
-export type MidiStatus = "idle" | "unsupported" | "denied" | "ready";
+const PAD_SYSEX_HEADER = [0x00, 0x20, 0x6b, 0x7f, 0x42, 0x02, 0x02, 0x16];
+
+export type MidiStatus = 'idle' | 'requesting' | 'unsupported' | 'denied' | 'ready';
 
 export interface PadColorPayload {
   pad: number;
@@ -16,12 +18,11 @@ export interface OledPayload {
   line2: string;
 }
 
-const padSysex = ({ pad, r, g, b }: PadColorPayload) =>
-  new Uint8Array([0xf0, ...SYSEX_ID, pad, r, g, b, 0xf7]);
+const padSysex = ({ pad, r, g, b }: PadColorPayload) => new Uint8Array([0xf0, ...PAD_SYSEX_HEADER, pad, r, g, b, 0xf7]);
 
 const encodeLine = (text: string) => {
   const truncated = text.slice(0, 16);
-  const ascii = Array.from(truncated).map((ch) => ch.charCodeAt(0) & 0x7f);
+  const ascii = Array.from(truncated).map((character) => character.charCodeAt(0) & 0x7f);
   const padding = new Array(16 - ascii.length).fill(0x20);
   return [...ascii, ...padding];
 };
@@ -40,18 +41,22 @@ const oledSysex = ({ line1, line2 }: OledPayload) =>
     0x01,
     ...encodeLine(line1),
     ...encodeLine(line2),
-    0xf7
+    0xf7,
   ]);
 
+const hasNavigatorMidi = typeof navigator !== 'undefined' && 'requestMIDIAccess' in navigator;
+
 export function useWebMIDI() {
-  const [status, setStatus] = useState<MidiStatus>("idle");
-  const [outputs, setOutputs] = useState<WebMidi.MIDIOutput[]>([]);
+  const [status, setStatus] = useState<MidiStatus>('idle');
+  const [outputs, setOutputs] = useState<MidiOutput[]>([]);
 
   useEffect(() => {
-    if (!navigator.requestMIDIAccess) {
-      setStatus("unsupported");
+    if (!hasNavigatorMidi) {
+      setStatus('unsupported');
       return;
     }
+
+    setStatus('requesting');
 
     navigator
       .requestMIDIAccess({ sysex: true })
@@ -59,29 +64,39 @@ export function useWebMIDI() {
         const updateOutputs = () => {
           setOutputs(Array.from(access.outputs.values()));
         };
+
         updateOutputs();
         access.onstatechange = updateOutputs;
-        setStatus("ready");
+        setStatus('ready');
       })
-      .catch(() => setStatus("denied"));
+      .catch(() => setStatus('denied'));
   }, []);
 
-  const sendPadColor = useCallback(
-    (payload: PadColorPayload) => {
-      outputs.forEach((output) => output.send(padSysex(payload)));
+  const withTargets = useCallback(
+    (targetId?: string) => {
+      if (!targetId) return outputs;
+      return outputs.filter((output) => output.id === targetId);
     },
-    [outputs]
+    [outputs],
+  );
+
+  const sendPadColor = useCallback(
+    (payload: PadColorPayload, targetId?: string) => {
+      withTargets(targetId).forEach((output) => output.send(padSysex(payload)));
+    },
+    [withTargets],
   );
 
   const sendOled = useCallback(
-    (payload: OledPayload) => {
-      outputs.forEach((output) => output.send(oledSysex(payload)));
+    (payload: OledPayload, targetId?: string) => {
+      withTargets(targetId).forEach((output) => output.send(oledSysex(payload)));
     },
-    [outputs]
+    [withTargets],
   );
 
   return useMemo(
     () => ({ status, outputs, sendPadColor, sendOled }),
-    [outputs, sendOled, sendPadColor, status]
+    [outputs, sendOled, sendPadColor, status],
   );
 }
+

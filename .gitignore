@@ -1,12 +1,21 @@
+<<<<<<< ours
 # Python
+=======
+>>>>>>> theirs
 __pycache__/
 *.pyc
 .venv/
 .env
+<<<<<<< ours
 
 # Node
 node_modules/
 dist/
 
 # macOS
+=======
+node_modules/
+.minilab-state/
+dist/
+>>>>>>> theirs
 .DS_Store
